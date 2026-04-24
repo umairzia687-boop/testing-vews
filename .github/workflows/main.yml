@@ -1,22 +1,40 @@
-name: Monetag_Bot_Runner
+name: 100_Sessions_Turbo_IP_Switch
 on:
   schedule:
-    - cron: '*/20 * * * *'
-  workflow_dispatch:
+    - cron: '0 */2 * * *' # Har 2 ghante baad 100 views (Total 1200 Daily)
+  workflow_dispatch: # Is se aap manually bhi jab chahen chala sakte hain
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # Agar aik job fail ho toh baqi rukni nahi chahiyen
+      matrix:
+        # Ye 20 sessions hain. Har session aik naya server aur IP lega.
+        session_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - name: Install Dependencies
         run: |
-          pip install playwright
+          pip install playwright requests
           playwright install chromium
-      - name: Run Bot Script
+
+      - name: Run 5 Views per IP
+        # Ye command bot.py ko chalayegi jo 5 views legi
         run: python bot.py
+
+      - name: Save Proof
+        if: always() # Chahay script fail ho ya pass, screenshot zaroor upload ho
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-session-${{ matrix.session_id }}
+          path: screenshot_*.png
+          retention-days: 1 # Taake storage full na ho
